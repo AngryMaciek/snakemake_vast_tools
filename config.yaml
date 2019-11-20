@@ -11,18 +11,19 @@
 ###############################################################################
 ---
 
-# path to the directory with all the scripts and executable files
-src_dir: "src"
-
 # path for the result directory
 output_dir: "output_dir"
 
-# file names for the random samples
-samples_filenames:
-  - "sample1"
-  - "sample2"
-  - "sample3"
-  - "sample4"
-  - "sample5"
+# path to the table with the RNA-Seq samples metadata
+design_file: "sample_design_table.tsv"
+
+# path to the VASTDB
+VASTDB: "VASTDB"
+
+# VAST-TOOLS parameters
+species: "Hsa"
+min_dPSI: "0"
+min_coverage: "10"
+MV_param: "95"
 
 ...
