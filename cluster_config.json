@@ -8,7 +8,7 @@
 "mem":"20G"
 },
 
-"generate_files":
+"VT_align":
 {
 "queue":"{params.queue}",
 "time": "{params.time}",
@@ -16,7 +16,23 @@
 "mem":"{resources.mem}"
 },
 
-"merge_results":
+"VT_combine":
+{
+"queue":"{params.queue}",
+"time": "{params.time}",
+"threads":"{resources.threads}",
+"mem":"{resources.mem}"
+},
+
+"VT_compare":
+{
+"queue":"{params.queue}",
+"time": "{params.time}",
+"threads":"{resources.threads}",
+"mem":"{resources.mem}"
+},
+
+"VT_diff":
 {
 "queue":"{params.queue}",
 "time": "{params.time}",
