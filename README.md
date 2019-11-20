@@ -1,4 +1,4 @@
-# vast_tools
+# Snakemake pipeline for VAST-TOOLS execution
 *Maciej_Bak  
 Swiss_Institute_of_Bioinformatics*
 
@@ -50,3 +50,10 @@ There are two scripts to start the pipeline, depending on whether you want to ru
 ## License
 
 GPL v3.0
+
+
+
+
+* design table
+* paired-end only ????
+* hsa mmu only
