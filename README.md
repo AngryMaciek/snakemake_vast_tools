@@ -41,10 +41,8 @@ Write a DAG (directed acyclic graph) into dag.pdf:
   bash snakemake_dag_run.sh
   ```
 
-There are four scripts to start the pipeline, depending on whether you want to run locally/on a SLURM computational cluster and if you prefer to use conda virtual environment or a specific container from dockerhub. In order to use singularity containers you need to have `singularity` installed. For the cluster execution it might be required to adapt the 'cluster_config.json' and submission scripts before starting the run.
+There are two scripts to start the pipeline, depending on whether you want to run locally/on a SLURM computational cluster. Subsequent snakemake rules are executed within a singularity container provided by VAST-TOOLS developers (therefore in order to use this pipeline one needs to have `singularity` installed as well). For the cluster execution it might be required to adapt the 'cluster_config.json' before starting the run.
   ```bash
-  bash snakemake_local_run_conda_env.sh
-  bash snakemake_cluster_run_conda_env.sh
   bash snakemake_local_run_singularity_container.sh
   bash snakemake_cluster_run_singularity_container.sh
   ```
