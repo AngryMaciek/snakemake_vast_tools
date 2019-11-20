@@ -57,3 +57,7 @@ GPL v3.0
 * design table
 * paired-end only ????
 * hsa mmu only
+* vastdb download rule and parameter
+* test locally
+* remove suffix in inclusion table
+* clean resources for localrules
