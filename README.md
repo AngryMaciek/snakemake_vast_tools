@@ -27,6 +27,7 @@ macOS:
 To execute the workflow one would require pandas python library and snakemake workflow menager.  
 Unless a  specific snakemake version is specified explicitly it is most likely the best choice to install the latest versions:
   ```bash
+  conda install -c conda-forge pandas
   conda install -c bioconda snakemake
   ```
 
