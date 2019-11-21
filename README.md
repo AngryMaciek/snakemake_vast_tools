@@ -2,9 +2,9 @@
 *Maciej_Bak  
 Swiss_Institute_of_Bioinformatics*
 
-[General information about the project]
+[VAST-TOOLS](https://github.com/vastgroup/vast-tools) is an awesome toolset for the analysis of Alternative Splicing from RNA-Seq data. In orderd to automate the screening process in my research I have developed a snakemake computational workflow that may be executes both localy and on a computational cluster. To maintain the reproducibility most of the pipeline steps are executed within a Singularity container which snakemake automatically builds based on the Docker container provided by VAST-TOOLS authors.
 
-description here: hsa mmu only
+This pipeline works with H.sapiens and M.musculus data only (as this is what I do research on), but can be easily expanded to support other organisms that are also available in VASTDB. Similar note applies to the parameters of subsequent VAST-TOOLS analyses: not all of them are implemented - jsut these that I found important to tweak. Also, the script for cluster execution assumes SLURM workload menager to be default but this might be also modified in the bash submission script.
 
 ## Snakemake pipeline execution
 Snakemake is a workflow management system that helps to create and execute data processing pipelines. It requires Python 3 and can be most easily installed via the bioconda package from the anaconda cloud service.
