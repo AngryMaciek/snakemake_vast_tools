@@ -4,6 +4,8 @@ Swiss_Institute_of_Bioinformatics*
 
 [General information about the project]
 
+description here: hsa mmu only
+
 ## Snakemake pipeline execution
 Snakemake is a workflow management system that helps to create and execute data processing pipelines. It requires Python 3 and can be most easily installed via the bioconda package from the anaconda cloud service.
 
@@ -34,7 +36,10 @@ Unless a  specific snakemake version is specified explicitly it is most likely t
 In case you are missing some dependancy packages please install them first (with `conda install ...` as well).
 
 ### Step 3: Pipeline execution
-Specify all the required information (input/output/parameters) in the config.yaml 
+Specify required information (input/output/parameters) in the config.yaml and information about RNA-Seq samples in the design table. The design table is a TSV file with four obligatory columns:
+* The first column "sample" would serve as sample unique IDs. Please do not use "." character within the ID.
+* Two columns "fq1" and "fq2" contain paths to the RNA-Seq samples. Please do not use "." character within the filename before the file extension. In case of paired-end sequencing data "fq1" should contain forwards read and "fq2" reverse reads. In case of single-end sequencing data please leave "fq2" with empty strings.
+* Column "condition" contains either: "treated" or "untreated" mask and refers to the experiment group of a particular sample.
 
 Write a DAG (directed acyclic graph) into dag.pdf:
   ```bash
@@ -50,18 +55,3 @@ There are two scripts to start the pipeline, depending on whether you want to ru
 ## License
 
 GPL v3.0
-
-
----------------------
-
-* design table description, single / paired, forward first?
-* hsa mmu only
-* description here
-* no dots inside fastq sapmle names and sample IDs
-
-
-
-Before each run adjust the config.yaml with the right information (input/output/parameters).
-The main input to the pipeline is the design table which has to have the following format:
-
-FORMAT
