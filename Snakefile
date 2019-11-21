@@ -33,13 +33,17 @@ def get_samples():
     design_table = pd.read_csv(config["design_file"], sep="\t")
     return list(design_table["sample"])
 
-#def get_CONTROL_samples():
-#    design_table = pd.read_csv(config["design_file"],sep="\t")
-#    return list(design_table[design_table["condition"]=="untreated"]["sample"])
+# get samples marked as untreated
+def get_CONTROL_samples():
+    design_table = pd.read_csv(config["design_file"], sep="\t")
+    mask = design_table["condition"] == "untreated"
+    return list(design_table[mask]["sample"])
 
-#def get_TREATMENT_samples():
-#    design_table = pd.read_csv(config["design_file"],sep="\t")
-#    return list(design_table[design_table["condition"]=="treated"]["sample"])
+# get samples marked as treated
+def get_TREATMENT_samples():
+    design_table = pd.read_csv(config["design_file"], sep="\t")
+    mask = design_table["condition"] == "treated"
+    return list(design_table[mask]["sample"])
 
 # add flags to force use new annotation versions
 def annotation_update(species):
@@ -56,7 +60,8 @@ def annotation_update(species):
 
 rule all:
     input:
-        TXT_final_results = expand(directory("{output_dir}/INCLUSION_LEVELS_FULL.tsv"),output_dir=config["output_dir"])
+        TSV_compare_outfile = expand(directory("{output_dir}/VT_compare_output.tsv"),output_dir=config["output_dir"]),
+        TSV_diff_outfile = expand(directory("{output_dir}/VT_diff_output.tsv"),output_dir=config["output_dir"])
 
 ##############################################################################
 ### Before even the analysis starts:
@@ -256,107 +261,98 @@ rule adjust_inclusion_table:
         #    df.columns = list(df.columns.values[:6]) + [c.split("_")[0]+c.split("_")[1][1:] for c in df.columns.values[6:]]
         df.to_csv(output.TSV_inclusion_table, sep="\t", index=False)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 #################################################################################
-### Compare the samples to each other
+### Compare treated/untreated samples to each other
 #################################################################################
 
-#rule VT_compare:
-#    input:
-#        inclusion_table = "{output_dir}/INCLUSION_LEVELS_FULL.tab"
-#    output:
-#        outfile = "{output_dir}/compare_output.tsv"
-#    params:
-#        c_samples = ",".join(get_CONTROL_samples()),
-#        t_samples = ",".join(get_TREATMENT_samples()),
-#        species = config["species"],
-#        min_dpsi = config["min_dPSI"],
-#        dbDir = "VASTDB",
-#        cluster_log = "{output_dir}/cluster_log/vast_tools_compare.log",
-#        queue = "6hours",
-#        time = "6:00:00"
-#    log:
-#        local_log = "{output_dir}/local_log/vast_tools_compare.log",
-#    resources:
-#        threads = 1,
-#        mem = 5000
-#    benchmark:
-#        "{output_dir}/cluster_log/vast_tools_compare.benchmark.log"
-#    singularity:
-#        "docker://zavolab/vast-tools:2.0.2"
-#    shell:
-#        """
-#        vast-tools compare \
-#        {input.inclusion_table} \
-#        --min_range -100 \
-#        --min_dPSI {params.min_dpsi} \
-#        --dbDir {params.dbDir} \
-#        --sp {params.species} \
-#        --GO \
-#        -a {params.c_samples} \
-#        -b {params.t_samples} \
-#        --outFile compare_output.tsv \
-#        &> {log.local_log}
-#        """
-
-
-
-
-
-
-
-
-
-
+rule VT_compare:
+    input:
+        TSV_inclusion_table = \
+            os.path.join("{output_dir}", "INCLUSION_LEVELS_FULL.tsv")
+    output:
+        TSV_compare_outfile = \
+            os.path.join("{output_dir}", "VT_compare_output.tsv")
+    params:
+        STRING_c_samples = ",".join(get_CONTROL_samples()),
+        STRING_t_samples = ",".join(get_TREATMENT_samples()),
+        species = config["species"],
+        min_dpsi = config["min_dPSI"],
+        db_dir = "VASTDB",
+        LOG_cluster_log = \
+            os.path.join("{output_dir}", "cluster_log", \
+                "VT_compare.log"),
+        queue = "6hours",
+        time = "6:00:00"
+    log:
+        LOG_local_log = \
+            os.path.join("{output_dir}", "local_log", \
+                "VT_compare.log")
+    resources:
+        threads = 1,
+        mem = 5000
+    benchmark:
+        os.path.join("{output_dir}", "cluster_log", \
+            "VT_compare_benchmark.log")
+    singularity:
+        "docker://vastgroup/vast-tools:v2.2.2"
+    shell:
+        """
+        vast-tools compare \
+        {input.TSV_inclusion_table} \
+        --min_range -100 \
+        --min_dPSI {params.min_dpsi} \
+        --dbDir {params.db_dir} \
+        --sp {params.species} \
+        --GO \
+        -a {params.STRING_c_samples} \
+        -b {params.STRING_t_samples} \
+        --outFile {output.TSV_outfile} \
+        &> {log.LOG_local_log}
+        """
 
 #################################################################################
 ### Differential Splicing Analysis
 #################################################################################
 
-#rule VT_diff:
-#    input:
-#        inclusion_table = "{output_dir}/INCLUSION_LEVELS_FULL.tab"
-#    output:
-#        outfile = "{output_dir}/diff_output.tsv"
-#    params:
-#        MV_param = config["MV_param"],
-#        outdir = "{output_dir}",
-#        c_samples = ",".join(get_CONTROL_samples()),
-#        t_samples = ",".join(get_TREATMENT_samples()),
-#        min_coverage = config["min_coverage"],
-#        cluster_log = "{output_dir}/cluster_log/vast_tools_diff.log",
-#        queue = "6hours",
-#        time = "6:00:00"
-#    log:
-#        local_log = "{output_dir}/local_log/vast_tools_diff.log",
-#    resources:
-#        threads = 8,
-#        mem = 5000
-#    benchmark:
-#        "{output_dir}/cluster_log/vast_tools_diff.benchmark.log"
-#    singularity:
-#        "docker://zavolab/vast-tools:2.0.2"
-#    shell:
-#        """
-#        vast-tools diff \
-#        -o {params.outdir} \
-#        -a {params.c_samples} \
-#        -b {params.t_samples} \
-#        -e {params.min_coverage} \
-#        -c {resources.threads} \
-#        -r {params.MV_param} \
-#        1> {output.outfile} \
-#        2> {log.local_log}
-#        """
+rule VT_diff:
+    input:
+        TSV_inclusion_table = \
+            os.path.join("{output_dir}", "INCLUSION_LEVELS_FULL.tsv")
+    output:
+        TSV_diff_outfile = \
+            os.path.join("{output_dir}", "VT_diff_output.tsv")
+    params:
+        MV_param = config["MV_param"],
+        min_coverage = config["min_coverage"],
+        DIR_outdir = "{output_dir}",
+        STRING_c_samples = ",".join(get_CONTROL_samples()),
+        STRING_t_samples = ",".join(get_TREATMENT_samples()),
+        LOG_cluster_log = \
+            os.path.join("{output_dir}", "cluster_log", \
+                "VT_diff.log"),
+        queue = "6hours",
+        time = "6:00:00"
+    log:
+        LOG_local_log = \
+            os.path.join("{output_dir}", "local_log", \
+                "VT_diff.log")
+    resources:
+        threads = 8,
+        mem = 5000
+    benchmark:
+        os.path.join("{output_dir}", "cluster_log", \
+            "VT_diff_benchmark.log")
+    singularity:
+        "docker://vastgroup/vast-tools:v2.2.2"
+    shell:
+        """
+        vast-tools diff \
+        -o {params.DIR_outdir} \
+        -a {params.STRING_c_samples} \
+        -b {params.STRING_t_samples} \
+        -e {params.min_coverage} \
+        -c {resources.threads} \
+        -r {params.MV_param} \
+        1> {output.TSV_diff_outfile} \
+        2> {log.LOG_local_log}
+        """
