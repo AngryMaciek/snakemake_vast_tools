@@ -52,12 +52,16 @@ There are two scripts to start the pipeline, depending on whether you want to ru
 GPL v3.0
 
 
+---------------------
 
-
-* design table
-* paired-end only ????
+* design table description, single / paired, forward first?
 * hsa mmu only
-* vastdb download rule and parameter
-* test locally
-* remove suffix in inclusion table
-* clean resources for localrules
+* description here
+* no dots inside fastq sapmle names and sample IDs
+
+
+
+Before each run adjust the config.yaml with the right information (input/output/parameters).
+The main input to the pipeline is the design table which has to have the following format:
+
+FORMAT
