@@ -74,19 +74,16 @@ rule all:
 
 rule VASTDB_download:
     output:
-        DIR_VASTDB = config["VASTDB"]
+        DIR_VASTDB = directory(config["VASTDB"])
     shell:
         """
-        vast-tools align \
-        {input.LIST_samples} \
-        --dbDir {params.db_dir} \
-        --output {output.DIR_align_dir} \
-        --sp {params.species} \
-        --useFastq \
-        --EEJ_counts \
-        --expr \
-        -cores {resources.threads} \
-        &> {log.LOG_local_log}
+        (mkdir {output.DIR_VASTDB} && \
+        cd {output.DIR_VASTDB} && \
+        wget http://vastdb.crg.eu/libs/vastdb.hsa.16.02.18.tar.gz && \
+        tar xzvf vastdb.hsa.16.02.18.tar.gz && \
+        wget http://vastdb.crg.eu/libs/vastdb.mmu.16.02.18.tar.gz && \
+        tar xzvf vastdb.mmu.16.02.18.tar.gz) \
+        2>&1
         """
 
 ##############################################################################
@@ -116,12 +113,12 @@ rule create_output_dir:
 rule VT_align:
     input:
         TMP_output = os.path.join("{output_dir}", "dir_created"),
-        LIST_samples = get_fastq
+        LIST_samples = get_fastq,
+        DIR_db_dir = config["VASTDB"]
     output:
         DIR_align_dir = directory("{output_dir}/vast_tools_align_{sample}")
     params:
         species = config["species"],
-        db_dir = "VASTDB",
         LOG_cluster_log = \
             os.path.join("{output_dir}", "cluster_log", \
                 "VT_align_{sample}.log"),
@@ -145,7 +142,7 @@ rule VT_align:
         """
         vast-tools align \
         {input.LIST_samples} \
-        --dbDir {params.db_dir} \
+        --dbDir {input.DIR_db_dir} \
         --output {output.DIR_align_dir} \
         --sp {params.species} \
         --useFastq \
@@ -172,11 +169,6 @@ rule group_alignments:
         LOG_cluster_log = \
             os.path.join("{output_dir}", "cluster_log", \
                 "group_alignments.log"),
-        queue = "30min",
-        time = "00:30:00"
-    resources:
-        threads = 1,
-        mem = 5000
     log:
         LOG_local_log = \
             os.path.join("{output_dir}", "local_log", \
@@ -198,13 +190,13 @@ rule group_alignments:
 
 rule VT_combine:
     input:
-        DIR_grouped_dir = os.path.join("{output_dir}", "grouped")
+        DIR_grouped_dir = os.path.join("{output_dir}", "grouped"),
+        DIR_db_dir = config["VASTDB"]
     output:
         TEMP_combine = temp(os.path.join("{output_dir}", "VT_combine.temp"))
     params:
         species = config["species"],
         annotation_update = annotation_update(config["species"]),
-        db_dir = "VASTDB",
         LOG_cluster_log = \
             os.path.join("{output_dir}", "cluster_log", \
                 "VT_combine.log"),
@@ -228,7 +220,7 @@ rule VT_combine:
         --o {input.DIR_grouped_dir} \
         --sp {params.species} \
         {params.annotation_update} \
-        --dbDir {params.db_dir}; \
+        --dbDir {input.DIR_db_dir}; \
         touch {output.TEMP_combine} \
         &> {log.LOG_local_log}
         """
@@ -249,15 +241,10 @@ rule adjust_inclusion_table:
         LOG_cluster_log = \
             os.path.join("{output_dir}", "cluster_log", \
                 "adjust_inclusion_table.log"),
-        queue = "30min",
-        time = "00:30:00"
     log:
         LOG_local_log = \
             os.path.join("{output_dir}", "local_log", \
                 "adjust_inclusion_table.log")
-    resources:
-        threads = 1,
-        mem = 5000
     run:
         # VAST_TOOLS takes one of the FASTQ files name as sample name
         # to be the header of a column in the inclusion table.
@@ -288,7 +275,8 @@ rule adjust_inclusion_table:
 rule VT_compare:
     input:
         TSV_inclusion_table = \
-            os.path.join("{output_dir}", "INCLUSION_LEVELS_FULL.tsv")
+            os.path.join("{output_dir}", "INCLUSION_LEVELS_FULL.tsv"),
+        DIR_db_dir = config["VASTDB"]
     output:
         TSV_compare_outfile = \
             os.path.join("{output_dir}", "VT_compare_output.tsv")
@@ -298,7 +286,6 @@ rule VT_compare:
         STRING_t_samples = ",".join(get_TREATMENT_samples()),
         species = config["species"],
         min_dpsi = config["min_dPSI"],
-        db_dir = "VASTDB",
         LOG_cluster_log = \
             os.path.join("{output_dir}", "cluster_log", \
                 "VT_compare.log"),
@@ -322,7 +309,7 @@ rule VT_compare:
         {input.TSV_inclusion_table} \
         --min_range -100 \
         --min_dPSI {params.min_dpsi} \
-        --dbDir {params.db_dir} \
+        --dbDir {input.DIR_db_dir} \
         --sp {params.species} \
         --GO \
         -a {params.STRING_c_samples} \
