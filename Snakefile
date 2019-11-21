@@ -60,8 +60,12 @@ def annotation_update(species):
 
 rule all:
     input:
-        TSV_compare_outfile = expand(directory("{output_dir}/VT_compare_output.tsv"),output_dir=config["output_dir"]),
-        TSV_diff_outfile = expand(directory("{output_dir}/VT_diff_output.tsv"),output_dir=config["output_dir"])
+        TSV_compare_outfile = expand( \
+            os.path.join("{output_dir}", "VT_compare_output.tsv"), \
+            output_dir=config["output_dir"]),
+        TSV_diff_outfile = expand( \
+            os.path.join("{output_dir}", "VT_diff_output.tsv"), \
+            output_dir=config["output_dir"])
 
 ##############################################################################
 ### Before even the analysis starts:
@@ -240,6 +244,7 @@ rule adjust_inclusion_table:
         TSV_inclusion_table = \
             os.path.join("{output_dir}", "INCLUSION_LEVELS_FULL.tsv")
     params:
+        TSV_design_table = config["design_file"],
         DIR_grouped_dir = directory(os.path.join("{output_dir}", "grouped")),
         LOG_cluster_log = \
             os.path.join("{output_dir}", "cluster_log", \
@@ -254,11 +259,26 @@ rule adjust_inclusion_table:
         threads = 1,
         mem = 5000
     run:
+        # VAST_TOOLS takes one of the FASTQ files name as sample name
+        # to be the header of a column in the inclusion table.
+        # Adjust that for the real sample sames from the design table.
         fname_regex = os.path.join(params.DIR_grouped_dir, "INCLUSION_*")
         df = pd.read_csv(glob.glob(fname_regex)[0], sep="\t", header=0)
-        #remove_suffix = "_" in df.columns.values[7]
-        #if remove_suffix:
-        #    df.columns = list(df.columns.values[:6]) + [c.split("_")[0]+c.split("_")[1][1:] for c in df.columns.values[6:]]
+        design_table = \
+            pd.read_csv(params.TSV_design_table, sep="\t", index_col=0)
+        name_dict = {}
+        for sample,row in design_table.iterrows():
+            old_name = row.fq1.split("/")[-1].split(".")[0]
+            name_dict[old_name] = sample
+        new_headers = list(df.columns.values[:6])
+        for col in df.columns.values[6:]:
+            if col in name_dict.keys():
+                new_headers.append(name_dict[col])
+            elif col in [x+"-Q" for x in name_dict.keys()]:
+                new_headers.append(name_dict[col[:-2]]+"-Q")
+            else:
+                assert False # should not happen
+        df.columns = new_headers
         df.to_csv(output.TSV_inclusion_table, sep="\t", index=False)
 
 #################################################################################
@@ -273,6 +293,7 @@ rule VT_compare:
         TSV_compare_outfile = \
             os.path.join("{output_dir}", "VT_compare_output.tsv")
     params:
+        TSV_compare_outfile_name = "VT_compare_output.tsv",
         STRING_c_samples = ",".join(get_CONTROL_samples()),
         STRING_t_samples = ",".join(get_TREATMENT_samples()),
         species = config["species"],
@@ -306,7 +327,7 @@ rule VT_compare:
         --GO \
         -a {params.STRING_c_samples} \
         -b {params.STRING_t_samples} \
-        --outFile {output.TSV_outfile} \
+        --outFile {params.TSV_compare_outfile_name} \
         &> {log.LOG_local_log}
         """
 
