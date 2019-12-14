@@ -64,7 +64,7 @@ rule all:
             os.path.join("{output_dir}", "VT_compare_output.tsv"), \
             output_dir=config["output_dir"]),
         TSV_diff_outfile = expand( \
-            os.path.join("{output_dir}", "VT_diff_output.tsv"), \
+            os.path.join("{output_dir}", "INCLUSION_LEVELS_FULL.DIFF.txt"), \
             output_dir=config["output_dir"])
 
 ##############################################################################
@@ -328,7 +328,7 @@ rule VT_diff:
             os.path.join("{output_dir}", "INCLUSION_LEVELS_FULL.tsv")
     output:
         TSV_diff_outfile = \
-            os.path.join("{output_dir}", "VT_diff_output.tsv")
+            os.path.join("{output_dir}", "INCLUSION_LEVELS_FULL.DIFF.txt")
     params:
         MV_param = config["MV_param"],
         min_coverage = config["min_coverage"],
@@ -361,6 +361,5 @@ rule VT_diff:
         -e {params.min_coverage} \
         -c {resources.threads} \
         -r {params.MV_param} \
-        1> {output.TSV_diff_outfile} \
         2> {log.LOG_local_log}
         """
