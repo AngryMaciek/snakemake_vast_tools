@@ -24,6 +24,6 @@ VASTDB: "VASTDB"
 species: "Hsa"
 min_dPSI: "0"
 min_coverage: "10"
-MV_param: "95"
+MV_param: "0.95"
 
 ...
