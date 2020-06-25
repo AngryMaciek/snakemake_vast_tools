@@ -82,7 +82,9 @@ rule VASTDB_download:
         wget http://vastdb.crg.eu/libs/vastdb.hsa.16.02.18.tar.gz && \
         tar xzvf vastdb.hsa.16.02.18.tar.gz && \
         wget http://vastdb.crg.eu/libs/vastdb.mmu.16.02.18.tar.gz && \
-        tar xzvf vastdb.mmu.16.02.18.tar.gz) \
+        tar xzvf vastdb.mmu.16.02.18.tar.gz && \
+        wget http://vastdb.crg.eu/libs/vastdb.cel.01.12.18.tar.gz && \
+        tar xzvf vastdb.cel.01.12.18.tar.gz) \
         2>&1
         """
 
