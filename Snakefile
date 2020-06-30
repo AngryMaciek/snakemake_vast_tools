@@ -162,7 +162,7 @@ rule VT_align:
 rule group_alignments:
     input:
         DIR_align_dir = \
-            expand(directory("{output_dir}/vast_tools_align_{sample}"), \
+            expand("{output_dir}/vast_tools_align_{sample}", \
                 output_dir=config["output_dir"], sample=get_samples())
     output:
         DIR_grouped_dir = directory(os.path.join("{output_dir}", "grouped"))
