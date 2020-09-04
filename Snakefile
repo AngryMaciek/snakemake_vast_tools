@@ -348,7 +348,7 @@ rule VT_diff:
                 "VT_diff.log")
     resources:
         threads = 8,
-        mem = 5000
+        mem = 20000
     benchmark:
         os.path.join("{output_dir}", "cluster_log", \
             "VT_diff_benchmark.log")
